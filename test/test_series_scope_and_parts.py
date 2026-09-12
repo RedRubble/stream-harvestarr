@@ -31,7 +31,7 @@ os.makedirs(os.path.join(APP_DIR, '..', 'logs'), exist_ok=True)
 sys.argv = sys.argv[:1]
 
 import stream_harvestarr  # noqa: E402
-from stream_harvestarr import MatchRules, has_part_marker  # noqa: E402
+from stream_harvestarr import MatchRules, extract_episode_identity, has_part_marker  # noqa: E402
 from utils import upperescape  # noqa: E402
 
 REQUIRE_SHOW = re.compile(r"epicly\s*later", re.IGNORECASE)
@@ -66,6 +66,49 @@ class TestHasPartMarker(unittest.TestCase):
     def test_empty(self):
         self.assertFalse(has_part_marker(''))
         self.assertFalse(has_part_marker(None))
+
+
+class TestEpisodeIdentityMatching(unittest.TestCase):
+
+    def test_extracts_10play_title_identity(self):
+        self.assertEqual(
+            extract_episode_identity('Taskmaster - S5 Ep. 2'), (5, 2))
+
+    def test_extracts_10play_url_identity(self):
+        self.assertEqual(
+            extract_episode_identity(
+                'https://10.com.au/taskmaster/episodes/season-5/episode-2/tpv123'),
+            (5, 2))
+
+    def test_identity_matches_when_sonarr_title_does_not(self):
+        rules = MatchRules(season_number=5, episode_number=2)
+        self.assertTrue(stream_harvestarr.title_matches(
+            {
+                'title': 'Taskmaster - S5 Ep. 2',
+                'url': 'https://10.com.au/taskmaster/episodes/season-5/episode-2/tpv123',
+            },
+            stream_harvestarr.upperescape("Australia's Occasional Sweetheart"),
+            rules))
+
+    def test_identity_rejects_the_wrong_episode(self):
+        rules = MatchRules(season_number=5, episode_number=2)
+        self.assertFalse(stream_harvestarr.title_matches(
+            {
+                'title': 'Taskmaster - S5 Ep. 3',
+                'url': 'https://10.com.au/taskmaster/episodes/season-5/episode-3/tpv123',
+            },
+            None,
+            rules))
+
+    def test_tba_episode_can_match_by_identity(self):
+        rules = MatchRules(season_number=5, episode_number=2)
+        self.assertTrue(stream_harvestarr.title_matches(
+            {
+                'title': 'Taskmaster - S5 Ep. 2',
+                'url': 'https://10.com.au/taskmaster/episodes/season-5/episode-2/tpv123',
+            },
+            stream_harvestarr.upperescape('TBA'),
+            rules))
 
 
 class TestRequireScopesToTheSeries(unittest.TestCase):

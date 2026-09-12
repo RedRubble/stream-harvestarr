@@ -96,6 +96,25 @@ PART_RE = re.compile(r"""
   | \b\d+\s+of\s+\d+\b                                      # 1 of 4
   | \b(?:part|pt\.?)\s*\d+\b                                # Part 2
 """, re.IGNORECASE | re.VERBOSE)
+SEASON_EPISODE_RE = re.compile(
+    r'\bS(?:eason\s*)?(\d{1,3})\s*(?:[-x]\s*)?'
+    r'(?:Ep(?:isode)?\.?|E)\s*(\d{1,4})\b',
+    re.IGNORECASE,
+)
+SEASON_EPISODE_URL_RE = re.compile(
+    r'/season[-_/](\d+).*?/episode[-_/](\d+)(?:/|$)',
+    re.IGNORECASE,
+)
+
+
+def extract_episode_identity(value):
+    """Extract a (season, episode) pair from a title or episode URL."""
+    if not value:
+        return None
+    match = SEASON_EPISODE_URL_RE.search(value) or SEASON_EPISODE_RE.search(value)
+    if match:
+        return int(match.group(1)), int(match.group(2))
+    return None
 
 
 def has_part_marker(title):
@@ -143,7 +162,8 @@ def path_safe(name):
 #   require:     compiled pattern a title must contain, from regex.require
 #   allow_parts: whether a "Part N" upload may satisfy this episode
 MatchRules = collections.namedtuple(
-    'MatchRules', ('site_regex', 'require', 'allow_parts'), defaults=(None, None, True))
+    'MatchRules', ('site_regex', 'require', 'allow_parts', 'season_number', 'episode_number'),
+    defaults=(None, None, True, None, None))
 DEFAULT_RULES = MatchRules()
 
 
@@ -166,6 +186,11 @@ def episode_title_matches(title, matchtitle, rules=DEFAULT_RULES):
         return False
     if not rules.allow_parts and has_part_marker(title):
         return False
+    candidate_identity = extract_episode_identity(title)
+    target_identity = (rules.season_number, rules.episode_number)
+    if all(number is not None for number in target_identity):
+        if candidate_identity is not None:
+            return candidate_identity == target_identity
     if not matchtitle:
         return True
     return re.search(
@@ -183,7 +208,17 @@ def title_matches(entry, matchtitle, rules=DEFAULT_RULES):
     An entry with no title cannot be verified, so it is rejected: a missing
     episode is recoverable, a wrong one silently isn't.
     """
-    return episode_title_matches(entry.get('title'), matchtitle, rules)
+    title = entry.get('title')
+    title_result = episode_title_matches(title, matchtitle, rules)
+    if title_result:
+        return True
+    target_identity = (rules.season_number, rules.episode_number)
+    if all(number is not None for number in target_identity):
+        candidate_identity = extract_episode_identity(
+            entry.get('webpage_url') or entry.get('url'))
+        if candidate_identity is not None:
+            return candidate_identity == target_identity
+    return False
 
 
 def make_title_filter(matchtitle, rules=DEFAULT_RULES, base_filter=None):
@@ -1060,6 +1095,8 @@ class StreamHarvester(object):
                             require=ser.get('site_require'),
                             allow_parts=parts_allowed(
                                 eps['title'], ser.get('strict_parts')),
+                            season_number=eps.get('seasonNumber'),
+                            episode_number=eps.get('episodeNumber'),
                         )
                         ydleps = self.ytdl_eps_search_opts(
                             matchtitle, ser['playlistreverse'], cookies, username,
