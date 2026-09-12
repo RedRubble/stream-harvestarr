@@ -202,5 +202,30 @@ class TestFilterseriesWiring(unittest.TestCase):
             {'sonarr': {'match': 'x', 'replace': ''}}).get('site_require'))
 
 
+class TestFilterseriesBySonarrId(unittest.TestCase):
+
+    def test_id_fetches_directly_without_loading_all_series(self):
+        harvester = stream_harvestarr.StreamHarvester.__new__(
+            stream_harvestarr.StreamHarvester)
+        harvester.series = [{'sonarr_id': '42', 'url': 'https://x/'}]
+        harvester.services = {}
+        requested_ids = []
+
+        def get_series_by_series_id(series_id):
+            requested_ids.append(series_id)
+            return {'title': 'Actual Sonarr Title', 'id': 42,
+                    'monitored': True, 'path': '/tv/actual'}
+
+        harvester.get_series_by_series_id = get_series_by_series_id
+        harvester.get_series = lambda: self.fail(
+            'ID-based configuration must not fetch every Sonarr series')
+
+        matched = stream_harvestarr.StreamHarvester.filterseries(harvester)
+
+        self.assertEqual(requested_ids, ['42'])
+        self.assertEqual([series['id'] for series in matched], [42])
+        self.assertEqual(matched[0]['title'], 'Actual Sonarr Title')
+
+
 if __name__ == '__main__':
     unittest.main()

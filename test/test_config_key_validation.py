@@ -65,6 +65,7 @@ class TestUnknownSeriesKeys(WarnUnknownKeysTestCase):
         self.assertEqual(self.warn([{
             'title': 'CHUMP',
             'url': 'https://www.youtube.com/playlist?list=X',
+            'sonarr_id': '42',
             'offset': {'days': 2},
             'regex': {'sonarr': {'match': 'x', 'replace': ''}},
             'subtitles': {'languages': ['en']},

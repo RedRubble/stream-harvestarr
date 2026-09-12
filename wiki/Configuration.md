@@ -263,7 +263,8 @@ series:
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `title` | string | Required | Series name (must match Sonarr exactly) |
+| `title` | string | Required unless `sonarr_id` is set | Series name or label for logs and downloaded paths; must match Sonarr when no ID is configured |
+| `sonarr_id` | integer | Optional | Sonarr series ID. When set, the series is fetched directly and title matching is skipped |
 | `url` | string | Required | Channel, playlist URL, or path relative to service URL |
 | `service` | string | Optional | Service name to inherit shared configuration from |
 | `format` | string | Optional | Override default format for this series |

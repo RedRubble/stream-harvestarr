@@ -232,7 +232,7 @@ INHERITABLE_KEYS = frozenset((
     'playlistreverse', 'offset', 'subtitles', 'regex',
     'strict_parts',
 ))
-KNOWN_SERIES_KEYS = INHERITABLE_KEYS | frozenset(('title', 'url', 'service'))
+KNOWN_SERIES_KEYS = INHERITABLE_KEYS | frozenset(('title', 'url', 'service', 'sonarr_id'))
 KNOWN_SERVICE_KEYS = INHERITABLE_KEYS | frozenset(('title', 'url'))
 KNOWN_REGEX_KEYS = frozenset(('sonarr', 'site', 'require'))
 
@@ -640,11 +640,22 @@ class StreamHarvester(object):
 
     def filterseries(self):
         """Return all series in Sonarr that are to be downloaded by yt-dlp"""
-        series = self.get_series()
+        series = None
         matched = []
-        for ser in series[:]:
-            for wnt in self.series:
-                if normalize_title(wnt['title']) == normalize_title(ser['title']):
+        for wnt in self.series:
+            # A configured Sonarr ID is authoritative and avoids fetching the
+            # complete series list. Without one, retain title matching for
+            # existing configurations.
+            if 'sonarr_id' in wnt:
+                configured_series = self.get_series_by_series_id(wnt['sonarr_id'])
+                candidate_series = [configured_series] if configured_series else []
+            else:
+                if series is None:
+                    series = self.get_series()
+                candidate_series = series[:]
+
+            for ser in candidate_series:
+                if 'sonarr_id' in wnt or normalize_title(wnt['title']) == normalize_title(ser['title']):
                     # Merge service config before reading any keys (series overrides service)
                     wnt = self.merge_service_config(wnt)
                     # Set default values
@@ -702,8 +713,9 @@ class StreamHarvester(object):
                     matched.append(ser)
         for check in matched:
             if not check['monitored']:
-                logger.warning('{0} is not currently monitored'.format(ser['title']))
-        del series[:]
+                logger.warning('{0} is not currently monitored'.format(check['title']))
+        if series is not None:
+            del series[:]
         return matched
 
     def getseriesepisodes(self, series):
