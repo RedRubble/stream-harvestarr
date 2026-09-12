@@ -108,8 +108,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           # Registry-backed cache is unscoped, persistent across workflows, and
           # not subject to the per-branch 10GB GHA cache eviction policy.
-          cache-from: type=registry,ref=${{ steps.vars.outputs.image }}/buildcache
-          cache-to: type=registry,ref=${{ steps.vars.outputs.image }}/buildcache,mode=max
+          cache-from: type=registry,ref=${{ steps.vars.outputs.image }}:buildcache
+          cache-to: type=registry,ref=${{ steps.vars.outputs.image }}:buildcache,mode=max
 
       - name: Back off before retry
         if: steps.build.outcome == 'failure'
@@ -132,8 +132,8 @@ jobs:
             ${{ steps.vars.outputs.image }}:${{ inputs.docker_tag }}
             ${{ inputs.version_tag != '' && format('{0}:{1}', steps.vars.outputs.image, inputs.version_tag) || '' }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.vars.outputs.image }}/buildcache
-          cache-to: type=registry,ref=${{ steps.vars.outputs.image }}/buildcache,mode=max
+          cache-from: type=registry,ref=${{ steps.vars.outputs.image }}:buildcache
+          cache-to: type=registry,ref=${{ steps.vars.outputs.image }}:buildcache,mode=max
 
       # continue-on-error above means the job would otherwise report success
       # when both attempts failed. Fail loudly instead, and guard against a

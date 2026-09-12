@@ -53,6 +53,6 @@ RUN chmod a+x \
     cp /app/config.yml.template /config/config.yml
 
 # ENV setup
-ENV CONFIGPATH /config/config.yml
+ENV CONFIGPATH=/config/config.yml
 
 CMD [ "python", "-u", "/app/stream_harvestarr.py" ]

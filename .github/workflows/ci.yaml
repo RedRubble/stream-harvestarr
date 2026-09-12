@@ -49,7 +49,7 @@ jobs:
           # Read from the same registry-backed cache the publish workflow
           # populates. No cache-to: PR canaries (including from forks) must
           # never write to the shared cache.
-          cache-from: type=registry,ref=ghcr.io/RedRubble/stream-harvestarr/buildcache
+          cache-from: type=registry,ref=ghcr.io/RedRubble/stream-harvestarr:buildcache
 
   smoke-test:
     name: Smoke Test (linux/amd64)
@@ -74,7 +74,7 @@ jobs:
           push: false
           platforms: linux/amd64
           tags: stream-harvestarr:ci
-          cache-from: type=registry,ref=ghcr.io/RedRubble/stream-harvestarr/buildcache
+          cache-from: type=registry,ref=ghcr.io/RedRubble/stream-harvestarr:buildcache
 
       - name: Verify runtime dependencies are installed
         run: |
