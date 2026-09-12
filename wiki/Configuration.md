@@ -295,6 +295,7 @@ series:
 | `regex.site.replace` | string | Optional | Replacement string for matched pattern |
 | `regex.require` | string | Optional | A site title must contain this pattern to be considered. Scopes a series when one channel carries several shows |
 | `strict_parts` | boolean | False | When `True`, a `(Part N)` upload only satisfies an episode whose own title names a part |
+| `extract_flat` | boolean | True | When `False`, fully resolve playlist entries before matching. Use for sources such as 10play whose flat entries have no titles |
 
 ## Example Complete Configuration
 

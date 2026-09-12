@@ -80,6 +80,11 @@ class TestSearchRunsFlat(unittest.TestCase):
         """Not True — the configured url itself must still resolve."""
         self.assertEqual(self.opts()['extract_flat'], 'in_playlist')
 
+    def test_extract_flat_can_be_disabled(self):
+        opts = stream_harvestarr.StreamHarvester.ytdl_eps_search_opts(
+            _NoDebug(), upperescape('Ben Kadow'), False, extract_flat=False)
+        self.assertFalse(opts['extract_flat'])
+
     def test_filter_still_installed(self):
         """Flat entries carry titles, so culling still happens up front."""
         self.assertTrue(callable(self.opts()['match_filter']))
