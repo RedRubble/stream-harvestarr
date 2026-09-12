@@ -25,7 +25,12 @@ SENSITIVE_KEY_SUBSTRINGS = (
 # redaction at all, because users stop trusting the redacted output.
 _APIKEY_QUERY_RE = re.compile(r'(apikey=)[^&\s]+', re.IGNORECASE)
 _APIKEY_JSON_RE = re.compile(r'(api[_-]?key["\']?\s*:\s*["\']?)[^&\s,}"\']+', re.IGNORECASE)
-_YTDL_PROGRESS_RE = re.compile(r'^\[download\].*\b\d+(?:\.\d+)?%\b')
+_YTDL_PROGRESS_RE = re.compile(r'^\[download\].*\b\d+(?:\.\d+)?%(?:\s|$)')
+
+
+def _is_download_progress(message):
+    """Identify yt-dlp percentage progress messages."""
+    return _YTDL_PROGRESS_RE.search(message) is not None
 
 
 def redact_sensitive(data):
@@ -192,7 +197,7 @@ class YoutubeDLLogger(object):
 
     def debug(self, msg: str) -> None:
         message = redact_sensitive(msg)
-        if not _YTDL_PROGRESS_RE.search(message):
+        if not _is_download_progress(message):
             self.logger.debug(message)
 
     def warning(self, msg: str) -> None:
