@@ -72,7 +72,13 @@ streamharvestarr:
 | `exponential_backoff` | boolean | True | Enable exponential backoff for repeated rate limiting |
 | `backoff_multiplier` | float | 2.0 | Multiply wait time by this factor on each subsequent rate limit |
 | `backoff_max` | integer | 3600 | Maximum backoff time in seconds (1 hour default) |
-| `download_directory` | string | Unset | Optional shared directory for downloaded files. When set, files remain there pending Sonarr import; when unset, downloads go directly into the Sonarr library |
+| `download_directory` | string | Unset | Optional shared directory for downloaded files. When set, files are imported into Sonarr from this path; when unset, downloads go directly into the Sonarr library |
+
+When `download_directory` is set, mount the same host directory at the same
+container path in Sonarr. For example, mount the host download directory as
+`/download` in both containers. Stream Harvestarr scans the completed file,
+submits its exact path and episode ID to Sonarr, and Sonarr moves and renames it
+according to its library configuration.
 
 **Recommended settings for bulk downloads:**
 

@@ -542,6 +542,81 @@ class StreamHarvester(object):
         ))
         return res.json()
 
+    def get_manual_import(self, folder, series_id):
+        """Return Sonarr's import candidates for a downloaded folder."""
+        logger.debug('Begin call Sonarr for manual import candidates')
+        res = self.request_get(
+            "{}/{}/manualimport".format(self.base_url, self.sonarr_api_version),
+            {
+                'folder': folder,
+                'seriesId': int(series_id),
+                'filterExistingFiles': True,
+            }
+        )
+        return res.json()
+
+    def import_downloaded_file(self, ser, eps, downloaded_path):
+        """Ask Sonarr to import one downloaded file for one known episode."""
+        candidates = self.get_manual_import(self.download_directory, ser['id'])
+        candidate = next(
+            (item for item in candidates
+             if item.get('path') == downloaded_path),
+            None,
+        )
+        if candidate is None:
+            logger.error('Sonarr did not return downloaded file for import: {}'.format(
+                downloaded_path))
+            return False
+
+        episode_id = eps.get('id')
+        if episode_id is None:
+            logger.error('Cannot import downloaded file without a Sonarr episode id: {}'.format(
+                downloaded_path))
+            return False
+
+        import_data = {
+            'path': downloaded_path,
+            'seriesId': int(ser['id']),
+            'seasonNumber': int(eps['seasonNumber']),
+            'episodeIds': [int(episode_id)],
+        }
+        # Preserve Sonarr's own media analysis rather than reconstructing
+        # quality and language data from the temporary filename.
+        for key in (
+            'quality', 'languages', 'releaseGroup', 'downloadId',
+            'customFormats', 'customFormatScore', 'indexerFlags', 'releaseType',
+        ):
+            if key in candidate and candidate[key] is not None:
+                import_data[key] = candidate[key]
+
+        res = self.request_put(
+            "{}/{}/manualimport".format(self.base_url, self.sonarr_api_version),
+            None,
+            [import_data]
+        )
+        if hasattr(res, 'raise_for_status'):
+            res.raise_for_status()
+        return not hasattr(res, 'status_code') or 200 <= res.status_code < 300
+
+    def find_downloaded_file(self, ser, eps, season, episode):
+        """Find the media file produced from a staging output template."""
+        template = self.build_download_template(ser, eps, season, episode)
+        path_prefix = template.replace('.%(ext)s', '')
+        directory, filename_prefix = os.path.split(path_prefix)
+        matches = [
+            os.path.join(directory, name)
+            for name in os.listdir(directory)
+            if name.startswith(filename_prefix)
+            and os.path.isfile(os.path.join(directory, name))
+            and not name.endswith(('.part', '.ytdl', '.srt', '.vtt'))
+        ]
+        if len(matches) != 1:
+            logger.error(
+                'Expected one downloaded file for import, found {}: {}'.format(
+                    len(matches), path_prefix))
+            return None
+        return matches[0]
+
     def request_get(self, url, params=None):
         """Wrapper on the requests.get"""
         logger.debug('Begin GET request to Sonarr API')
@@ -1051,9 +1126,14 @@ class StreamHarvester(object):
                                 with yt_dlp.YoutubeDL(ytdl_format_options) as ydl:
                                      ydl.download([dlurl])
                                 if getattr(self, 'download_directory', ''):
-                                    logger.info(
-                                        "      Staged - {} (manual import pending)".format(
-                                            eps['title']))
+                                    downloaded_path = self.find_downloaded_file(
+                                        ser, eps, season, episode)
+                                    if downloaded_path is None or not self.import_downloaded_file(
+                                            ser, eps, downloaded_path):
+                                        raise RuntimeError(
+                                            'Sonarr import failed for {}'.format(
+                                                downloaded_path or eps['title']))
+                                    logger.info("      Imported - {}".format(eps['title']))
                                 else:
                                     self.rescanseries(ser['id'])
                                     logger.info("      Downloaded - {}".format(eps['title']))

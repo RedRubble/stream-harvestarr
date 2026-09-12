@@ -9,7 +9,7 @@ streamharvestarr:
     exponential_backoff: True  # enable exponential backoff when repeatedly rate limited (default: True)
     backoff_multiplier: 2.0  # multiply wait time by this factor on each subsequent rate limit (default: 2.0)
     backoff_max: 3600  # maximum backoff time in seconds (default: 3600 = 1 hour)
-    # download_directory: /download  # optional shared directory for downloads pending Sonarr import
+    # download_directory: /download  # optional shared directory; Sonarr must mount the same path
 
 sonarr:
     host: 192.168.1.123

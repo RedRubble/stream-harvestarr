@@ -116,6 +116,9 @@ services:
 | `-v /download` | Optional shared download location configured by `download_directory`
 | `-v /logs` | log location |
 
+When using `download_directory`, mount the same host directory at `/download`
+in Sonarr as well. Sonarr then imports, moves, and renames each completed file.
+
 **Clarification on sonarr_root**
 
 A couple of people are not sure what is meant by the sonarr root. As this downloads directly to where you media is stored I mean the root folder where sonarr will place the files. So in sonarr you have your files moving to `/mnt/sda1/media/tv/Smarter Every Day/` as an example, in sonarr you will see that it saves this series to `/tv/Smarter Every Day/` meaning the sonarr root is `/mnt/sda1/media/` as this is the root folder sonarr is working from.
