@@ -33,6 +33,7 @@ ytdl:
 # services:
 #   - title: YouTube Members
 #     url: https://www.youtube.com/
+#     release_group: StreamHarvestarr  # release group used during Sonarr import
 #     cookies_file: youtube_cookies.txt  # located in the same config folder
 #     subtitles:
 #       languages: ['en']

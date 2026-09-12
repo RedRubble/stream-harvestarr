@@ -77,7 +77,7 @@ class TestManualImport(unittest.TestCase):
             return FakeResponse()
 
         self.client.request_put = request_put
-        series = {'id': 314}
+        series = {'id': 314, 'release_group': 'Example'}
         episode = {'id': 2718, 'seasonNumber': 2}
 
         self.assertTrue(self.client.import_downloaded_file(
@@ -93,6 +93,18 @@ class TestManualImport(unittest.TestCase):
             'languages': [{'id': 1, 'name': 'English'}],
             'releaseGroup': 'Example',
         }])
+
+    def test_import_uses_configured_release_group(self):
+        candidate = {'path': '/download/episode.mkv'}
+        self.client.get_manual_import = lambda folder, series_id: [candidate]
+        self.client.request_put = lambda url, params=None, jsondata=None: (
+            self.client.sent.update(data=jsondata) or FakeResponse())
+
+        self.assertTrue(self.client.import_downloaded_file(
+            {'id': 314, 'release_group': 'TenPlay'},
+            {'id': 2718, 'seasonNumber': 2},
+            '/download/episode.mkv'))
+        self.assertEqual(self.client.sent['data'][0]['releaseGroup'], 'TenPlay')
 
     def test_import_rejects_file_not_returned_by_sonarr(self):
         self.client.get_manual_import = lambda folder, series_id: []

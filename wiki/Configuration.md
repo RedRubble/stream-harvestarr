@@ -296,6 +296,7 @@ series:
 | `regex.require` | string | Optional | A site title must contain this pattern to be considered. Scopes a series when one channel carries several shows |
 | `strict_parts` | boolean | False | When `True`, a `(Part N)` upload only satisfies an episode whose own title names a part |
 | `extract_flat` | boolean | True | When `False`, fully resolve playlist entries before matching. Use for sources such as 10play whose flat entries have no titles |
+| `release_group` | string | `StreamHarvestarr` | Release group assigned during Sonarr manual import; series settings override service settings |
 
 ## Example Complete Configuration
 
