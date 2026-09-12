@@ -1030,6 +1030,8 @@ class StreamHarvester(object):
                 matchtitle = ydl_opts.get('matchtitle')
             entries = result.get('entries')
             candidates = list(entries) if entries else [result]
+            if ydl_opts.get('playlistreverse'):
+                candidates.reverse()
             for entry in candidates:
                 if entry is None:
                     continue
