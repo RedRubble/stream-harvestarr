@@ -33,12 +33,13 @@ RUN --mount=type=cache,target=/var/cache/apk,id=apk-${TARGETARCH},sharing=locked
 RUN addgroup -g 1000 ytdlpg && \
 	adduser -u 911 -h /config -s /bin/false ytdlp -D && \
 	addgroup ytdlp ytdlpg && \
-	mkdir -p /config /app /sonarr_root /logs && \
+	mkdir -p /config /app /sonarr_root /download /logs && \
 	chown -R ytdlp:ytdlpg /config /logs
 
 # add volumes
 VOLUME /config
 VOLUME /sonarr_root
+VOLUME /download
 VOLUME /logs
 
 # add local files

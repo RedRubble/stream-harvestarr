@@ -84,6 +84,29 @@ class TestOuttmplStaysOneFile(unittest.TestCase):
         out = self.render("Epicly Later'd", 'Ben Kadow')
         self.assertTrue(out.endswith("Epicly Later'd - S0E82 - Ben Kadow WEBDL.%(ext)s"), out)
 
+class TestDownloadTemplates(unittest.TestCase):
+
+    def setUp(self):
+        self.client = stream_harvestarr.StreamHarvester.__new__(
+            stream_harvestarr.StreamHarvester)
+        self.client.root_folder = '/sonarr_root'
+        self.client.download_directory = '/download'
+        self.series = {'id': 7, 'title': "Epicly Later'd", 'path': '/tv/Epicly Later'}
+        self.episode = {
+            'id': 82, 'title': 'Ben Kadow', 'seasonNumber': 5, 'episodeNumber': 8,
+        }
+
+    def test_direct_template_stays_in_series_library(self):
+        self.client.download_directory = ''
+        self.assertEqual(
+            self.client.build_download_template(self.series, self.episode, '05', '08'),
+            "/sonarr_root/tv/Epicly Later/Season 05/Epicly Later'd - S05E08 - Ben Kadow WEBDL.%(ext)s")
+
+    def test_configured_directory_template_is_readable_and_unique(self):
+        self.assertEqual(
+            self.client.build_download_template(self.series, self.episode, '05', '08'),
+            "/download/Epicly Later'd - S05E08 - Ben Kadow [series-7-episode-82].%(ext)s")
+
 
 if __name__ == '__main__':
     unittest.main()

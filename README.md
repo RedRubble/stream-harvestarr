@@ -78,6 +78,7 @@ docker create \
   --name=stream-harvestarr \
   -v /path/to/data:/config \
   -v /path/to/sonarrmedia:/sonarr_root \
+  -v /path/to/download-directory:/download \
   -v /path/to/logs:/logs \
   --restart unless-stopped \
   ryakel/stream-harvestarr
@@ -96,6 +97,7 @@ services:
     volumes:
       - /path/to/data:/config
       - /path/to/sonarrmedia:/sonarr_root
+      - /path/to/download-directory:/download
       - /path/to/logs:/logs
     healthcheck:
       test: curl --fail https://youtube.com || exit 1
@@ -111,6 +113,7 @@ services:
 | :----: | --- |
 | `-v /config` | Stream Harvestarr configs |
 | `-v /sonarr_root` | Root library location from Sonarr container |
+| `-v /download` | Optional shared download location configured by `download_directory`
 | `-v /logs` | log location |
 
 **Clarification on sonarr_root**

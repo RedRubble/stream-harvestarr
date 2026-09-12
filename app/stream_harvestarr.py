@@ -393,6 +393,8 @@ class StreamHarvester(object):
             # lives in pathutils.normalize_root_folder so it can be unit-tested.
             raw = cfg['sonarr'].get('root_folder', DEFAULT_ROOT_FOLDER)
             self.root_folder = normalize_root_folder(raw)
+            self.download_directory = self.config_section.get(
+                'download_directory', '').rstrip('/')
         except Exception as e:
             sys.exit(f"Error with sonarr config.yml values: {e}")
 
@@ -476,6 +478,30 @@ class StreamHarvester(object):
         if self.episode_padding > 0:
             return str(episode_number).zfill(self.episode_padding)
         return str(episode_number)
+
+    def build_download_template(self, ser, eps, season, episode):
+        """Build the direct-library or configured-directory output template."""
+        series_title = path_safe(ser['title'])
+        episode_title = path_safe(eps['title'])
+        download_directory = getattr(self, 'download_directory', '')
+        if download_directory:
+            return '{0}/{1} - S{2}E{3} - {4} [series-{5}-episode-{6}].%(ext)s'.format(
+                download_directory,
+                series_title,
+                season,
+                episode,
+                episode_title,
+                ser['id'],
+                eps.get('id', eps['episodeNumber']),
+            )
+        return '{0}{1}/Season {2}/{3} - S{2}E{4} - {5} WEBDL.%(ext)s'.format(
+            self.root_folder,
+            ser['path'],
+            season,
+            series_title,
+            episode,
+            episode_title,
+        )
 
     def get_episodes_by_series_id(self, series_id):
         """Returns all episodes for the given series"""
@@ -969,14 +995,8 @@ class StreamHarvester(object):
                                 # folder and a file. Only multi-part episodes
                                 # carry a slash, so this went unnoticed until
                                 # they were monitored.
-                                'outtmpl': '{0}{1}/Season {2}/{3} - S{2}E{4} - {5} WEBDL.%(ext)s'.format(
-                                    self.root_folder,
-                                    ser['path'],
-                                    season,
-                                    path_safe(ser['title']),
-                                    episode,
-                                    path_safe(eps['title'])
-                                ),
+                                'outtmpl': self.build_download_template(
+                                    ser, eps, season, episode),
                                 'progress_hooks': [ytdl_hooks],
                                 'noplaylist': True,
                                 'forceipv4': True,
@@ -1030,8 +1050,13 @@ class StreamHarvester(object):
                             try:
                                 with yt_dlp.YoutubeDL(ytdl_format_options) as ydl:
                                      ydl.download([dlurl])
-                                self.rescanseries(ser['id'])
-                                logger.info("      Downloaded - {}".format(eps['title']))
+                                if getattr(self, 'download_directory', ''):
+                                    logger.info(
+                                        "      Staged - {} (manual import pending)".format(
+                                            eps['title']))
+                                else:
+                                    self.rescanseries(ser['id'])
+                                    logger.info("      Downloaded - {}".format(eps['title']))
                                 # Reset backoff on successful download
                                 if self.rate_limit_count > 0:
                                     logger.info("      Rate limit recovered - resetting backoff counter")

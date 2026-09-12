@@ -61,6 +61,7 @@ streamharvestarr:
     exponential_backoff: True
     backoff_multiplier: 2.0
     backoff_max: 3600
+    # download_directory: /download
 ```
 
 | Setting | Type | Default | Description |
@@ -71,6 +72,7 @@ streamharvestarr:
 | `exponential_backoff` | boolean | True | Enable exponential backoff for repeated rate limiting |
 | `backoff_multiplier` | float | 2.0 | Multiply wait time by this factor on each subsequent rate limit |
 | `backoff_max` | integer | 3600 | Maximum backoff time in seconds (1 hour default) |
+| `download_directory` | string | Unset | Optional shared directory for downloaded files. When set, files remain there pending Sonarr import; when unset, downloads go directly into the Sonarr library |
 
 **Recommended settings for bulk downloads:**
 
