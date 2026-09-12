@@ -1,7 +1,7 @@
-# syntax=docker/dockerfile:1.26
+# syntax=docker/dockerfile:1
 FROM python:3.14-alpine
-LABEL maintainer="github.com/ryakel"
-LABEL org.opencontainers.image.source="https://github.com/ryakel/stream-harvestarr"
+LABEL maintainer="github.com/RedRubble"
+LABEL org.opencontainers.image.source="https://github.com/RedRubble/stream-harvestarr"
 
 ARG TARGETARCH
 
