@@ -1,16 +1,16 @@
 ![Screen Harvester logo](/img/stream-harvestarr-logo_small.png)
-# Stream Harvestarr by [@ryakel](https://github.com/ryakel)
+# Stream Harvestarr by [@RedRubble](https://github.com/RedRubble)
 
-![Docker Pulls](https://img.shields.io/docker/pulls/ryakel/stream-harvestarr?style=flat-square)
-![Docker Stars](https://img.shields.io/docker/stars/ryakel/stream-harvestarr?style=flat-square)
+![Docker Pulls](https://img.shields.io/docker/pulls/RedRubble/stream-harvestarr?style=flat-square)
+![Docker Stars](https://img.shields.io/docker/stars/RedRubble/stream-harvestarr?style=flat-square)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Docker Hub](https://img.shields.io/badge/Open%20On-DockerHub-blue)](https://hub.docker.com/r/ryakel/stream-harvestarr)
+[![Docker Hub](https://img.shields.io/badge/Open%20On-DockerHub-blue)](https://hub.docker.com/r/RedRubble/stream-harvestarr)
 
-:warning: NOTE: The image name and repo have changed to ```ryakel/stream-havestarr```. 
-```ryakel/sonarr-yt-dlp``` has been deprecated as of version ```1.2.17```. 
+:warning: NOTE: The image name and repo have changed to ```RedRubble/stream-havestarr```. 
+```RedRubble/sonarr-yt-dlp``` has been deprecated as of version ```1.2.17```. 
 Please update your image and update your config.yml. :warning:
 
-[ryakel/stream-harvestarr](https://github.com/ryakel/stream-harvestarr) is a [Sonarr](https://sonarr.tv/) companion script to allow the automatic downloading of web series normally not available for Sonarr to search for. Using [YT-DLP](https://github.com/yt-dlp/yt-dlp) (a youtube-dl fork with added features) it allows you to download your webseries from the list of [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md).
+[RedRubble/stream-harvestarr](https://github.com/RedRubble/stream-harvestarr) is a [Sonarr](https://sonarr.tv/) companion script to allow the automatic downloading of web series normally not available for Sonarr to search for. Using [YT-DLP](https://github.com/yt-dlp/yt-dlp) (a youtube-dl fork with added features) it allows you to download your webseries from the list of [supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md).
 
 ## Features
 
@@ -25,13 +25,13 @@ Please update your image and update your config.yml. :warning:
 
 ## Documentation
 
-**For detailed documentation, configuration guides, and troubleshooting, visit the [Stream Harvestarr Wiki](https://github.com/ryakel/stream-harvestarr/wiki)**
+**For detailed documentation, configuration guides, and troubleshooting, visit the [Stream Harvestarr Wiki](https://github.com/RedRubble/stream-harvestarr/wiki)**
 
 Key documentation sections:
-- [Configuration Guide](https://github.com/ryakel/stream-harvestarr/wiki/Configuration) - Complete configuration reference
-- [Rate Limiting & Performance](https://github.com/ryakel/stream-harvestarr/wiki/Rate-Limiting) - Handling YouTube rate limits
-- [Troubleshooting](https://github.com/ryakel/stream-harvestarr/wiki/Troubleshooting) - Common issues and solutions
-- [Advanced Features](https://github.com/ryakel/stream-harvestarr/wiki/Advanced-Features) - Cookies, subtitles, regex, and more
+- [Configuration Guide](https://github.com/RedRubble/stream-harvestarr/wiki/Configuration) - Complete configuration reference
+- [Rate Limiting & Performance](https://github.com/RedRubble/stream-harvestarr/wiki/Rate-Limiting) - Handling YouTube rate limits
+- [Troubleshooting](https://github.com/RedRubble/stream-harvestarr/wiki/Troubleshooting) - Common issues and solutions
+- [Advanced Features](https://github.com/RedRubble/stream-harvestarr/wiki/Advanced-Features) - Cookies, subtitles, regex, and more
 
 ## How do I use it
 
@@ -65,7 +65,7 @@ recommended targets.
 | :----: | --- |
 | latest | Current release code |
 | dev | Pre-release code for testing issues |
-| v.X.Y.Z | Versions matching [GitHub Releases](https://github.com/ryakel/stream-harvestarr/releases) |
+| v.X.Y.Z | Versions matching [GitHub Releases](https://github.com/RedRubble/stream-harvestarr/releases) |
 
 ## Great how do I get started
 
@@ -81,7 +81,7 @@ docker create \
   -v /path/to/download-directory:/download \
   -v /path/to/logs:/logs \
   --restart unless-stopped \
-  ryakel/stream-harvestarr
+  RedRubble/stream-harvestarr
 ```
 
 ### docker-compose
@@ -91,7 +91,7 @@ docker create \
 version: '3.4'
 services:
   stream-harvestarr:
-    image: ryakel/stream-harvestarr
+    image: RedRubble/stream-harvestarr
     container_name: stream-harvestarr
     # user: "1000:1000"  # match your host uid:gid — see wiki/Upgrading
     volumes:
@@ -135,14 +135,14 @@ Stream Harvestarr is fully backward compatible with existing configuration files
 
 - **Rate limiting is disabled by default** - Your existing config will continue working as before
 - **No config changes required** - Update the container and it just works
-- **Optional improvements** - Add new settings to enable rate limit protection (see [Rate Limiting guide](https://github.com/ryakel/stream-harvestarr/wiki/Rate-Limiting))
+- **Optional improvements** - Add new settings to enable rate limit protection (see [Rate Limiting guide](https://github.com/RedRubble/stream-harvestarr/wiki/Rate-Limiting))
 
 To take advantage of the new rate limiting features, you can optionally add these settings to your existing `config.yml` under the `streamharvestarr:` section. See the [config.yml.template](./app/config.yml.template) for examples.
 
 If you found this helpful, please consider donating below.
 
 <!-- markdownlint-disable MD033 -->
-<a href="https://www.buymeacoffee.com/ryakel" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/lato-black.png" alt="Buy Me A Coffee" style="height: 51px !important;width: 217px !important;" ></a>
+<a href="https://www.buymeacoffee.com/RedRubble" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/lato-black.png" alt="Buy Me A Coffee" style="height: 51px !important;width: 217px !important;" ></a>
 <!-- markdownlint-enable MD033 -->
 
 Credit to [@whatdaybob](https://github.com/whatdaybob/sonarr_youtubedl) for the original code.

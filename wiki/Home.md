@@ -82,7 +82,7 @@ If you encounter issues not covered in this documentation:
 
 1. Check the [Troubleshooting](Troubleshooting) guide
 2. Review container logs in your `/logs` volume
-3. Open an issue on [GitHub](https://github.com/ryakel/stream-harvestarr/issues)
+3. Open an issue on [GitHub](https://github.com/RedRubble/stream-harvestarr/issues)
 
 ## Contributing
 

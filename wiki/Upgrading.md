@@ -119,7 +119,7 @@ docker rm stream-harvestarr
 
 **3. Pull the latest image:**
 ```bash
-docker pull ryakel/stream-harvestarr:latest
+docker pull RedRubble/stream-harvestarr:latest
 ```
 
 **4. Start with your existing config:**
@@ -130,7 +130,7 @@ docker create \
   -v /path/to/sonarrmedia:/sonarr_root \
   -v /path/to/logs:/logs \
   --restart unless-stopped \
-  ryakel/stream-harvestarr:latest
+  RedRubble/stream-harvestarr:latest
 
 docker start stream-harvestarr
 ```
@@ -141,7 +141,7 @@ docker start stream-harvestarr
 ```yaml
 services:
   stream-harvestarr:
-    image: ryakel/stream-harvestarr:latest  # or specific version
+    image: RedRubble/stream-harvestarr:latest  # or specific version
 ```
 
 **2. Pull and restart:**
@@ -280,7 +280,7 @@ Common issues:
 cp /path/to/config/config.yml /path/to/config/config.yml.backup
 
 # Try with fresh template
-docker run --rm ryakel/stream-harvestarr cat /app/config.yml.template > /path/to/config/config.yml
+docker run --rm RedRubble/stream-harvestarr cat /app/config.yml.template > /path/to/config/config.yml
 
 # Edit with your settings
 nano /path/to/config/config.yml
@@ -382,7 +382,7 @@ cp /path/to/config/config.yml /path/to/config/config.yml.backup
 
 2. **Note your current version:**
 ```bash
-docker inspect ryakel/stream-harvestarr | grep "Created"
+docker inspect RedRubble/stream-harvestarr | grep "Created"
 ```
 
 3. **Check current functionality:**
@@ -419,7 +419,7 @@ docker rm stream-harvestarr
 
 **2. Pull previous version:**
 ```bash
-docker pull ryakel/stream-harvestarr:v1.2.17  # or your previous version
+docker pull RedRubble/stream-harvestarr:v1.2.17  # or your previous version
 ```
 
 **3. Start with backup config:**
@@ -431,7 +431,7 @@ docker create \
   -v /path/to/sonarrmedia:/sonarr_root \
   -v /path/to/logs:/logs \
   --restart unless-stopped \
-  ryakel/stream-harvestarr:v1.2.17
+  RedRubble/stream-harvestarr:v1.2.17
 
 docker start stream-harvestarr
 ```

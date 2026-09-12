@@ -254,7 +254,7 @@ volumes:
 
 **Solution 2:** Update YT-DLP:
 ```bash
-docker pull ryakel/stream-harvestarr:latest
+docker pull RedRubble/stream-harvestarr:latest
 docker restart stream-harvestarr
 ```
 
@@ -481,7 +481,7 @@ streamharvestarr:
 
 Or pass debug flag:
 ```bash
-docker run -e DEBUG=True ryakel/stream-harvestarr
+docker run -e DEBUG=True RedRubble/stream-harvestarr
 ```
 
 ### Understanding Log Levels
@@ -572,7 +572,7 @@ If your issue isn't covered here:
 
 ### Before Opening an Issue
 
-1. **Check existing issues** on [GitHub](https://github.com/ryakel/stream-harvestarr/issues)
+1. **Check existing issues** on [GitHub](https://github.com/RedRubble/stream-harvestarr/issues)
 2. **Gather information:**
    - Stream Harvestarr version/tag
    - Docker version
