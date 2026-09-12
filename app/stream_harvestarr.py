@@ -369,9 +369,12 @@ class StreamHarvester(object):
             api = "api"
             scheme = "http"
             basedir = ""
-            if cfg['sonarr'].get('version', '').lower() == 'v4':
+            if cfg['sonarr'].get('version', '').lower() == 'v5':
+                api = "api/v5"
+                logger.debug('API set to v5')
+            else:
                 api = "api/v3"
-                logger.debug('Sonarr api set to v4')
+                logger.debug('Using api version v3')
             if cfg['sonarr']['ssl'].lower() == 'true':
                 scheme = "https"
             if cfg['sonarr'].get('basedir', ''):
