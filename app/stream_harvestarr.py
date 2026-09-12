@@ -23,6 +23,7 @@ args = parser.parse_args()
 logger = setup_logging(True, True, args.debug)
 
 date_format = "%Y-%m-%dT%H:%M:%SZ"
+PLACEHOLDER_EPISODE_TITLES = frozenset(('tba', 'to be announced'))
 
 CONFIGFILE = os.environ['CONFIGPATH']
 CONFIGPATH = CONFIGFILE.replace('config.yml', '')
@@ -870,10 +871,14 @@ class StreamHarvester(object):
             episodes = self.get_episodes_by_series_id(ser['id'])
             for eps in episodes[:]:
                 eps_date = now
-                if "airDateUtc" in eps:
+                has_air_date = bool(eps.get('airDateUtc'))
+                if has_air_date:
                     eps_date = datetime.strptime(eps['airDateUtc'], date_format)
                     if 'offset' in ser:
                         eps_date = offsethandler(eps_date, ser['offset'])
+                elif normalize_title(eps.get('title', '')).lower() in PLACEHOLDER_EPISODE_TITLES:
+                    episodes.remove(eps)
+                    continue
                 if not eps['monitored']:
                     episodes.remove(eps)
                 elif eps['hasFile']:
