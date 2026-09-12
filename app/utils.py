@@ -6,7 +6,6 @@ import yaml
 import logging
 from logging.handlers import RotatingFileHandler
 
-
 CONFIGFILE = os.environ['CONFIGPATH']
 # CONFIGPATH = CONFIGFILE.replace('config.yml', '')
 
@@ -26,6 +25,7 @@ SENSITIVE_KEY_SUBSTRINGS = (
 # redaction at all, because users stop trusting the redacted output.
 _APIKEY_QUERY_RE = re.compile(r'(apikey=)[^&\s]+', re.IGNORECASE)
 _APIKEY_JSON_RE = re.compile(r'(api[_-]?key["\']?\s*:\s*["\']?)[^&\s,}"\']+', re.IGNORECASE)
+_YTDL_PROGRESS_RE = re.compile(r'^\[download\].*\b\d+(?:\.\d+)?%\b')
 
 
 def redact_sensitive(data):
@@ -191,7 +191,9 @@ class YoutubeDLLogger(object):
         self.logger.info(redact_sensitive(msg))
 
     def debug(self, msg: str) -> None:
-        self.logger.debug(redact_sensitive(msg))
+        message = redact_sensitive(msg)
+        if not _YTDL_PROGRESS_RE.search(message):
+            self.logger.debug(message)
 
     def warning(self, msg: str) -> None:
         self.logger.info(redact_sensitive(msg))
@@ -206,8 +208,7 @@ def ytdl_hooks_debug(d):
         file_tuple = os.path.split(os.path.abspath(d['filename']))
         logger.info("      Done downloading {}".format(file_tuple[1]))  # print("Done downloading {}".format(file_tuple[1]))
     if d['status'] == 'downloading':
-        progress = "      {} - {} - {}".format(d['filename'], d['_percent_str'], d['_eta_str'])
-        logger.debug(progress)
+        return
 
 
 def ytdl_hooks(d):
