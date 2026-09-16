@@ -714,14 +714,41 @@ class StreamHarvester(object):
     def import_downloaded_file(self, ser, eps, downloaded_path):
         """Ask Sonarr to import one downloaded file for one known episode."""
         candidates = self.get_manual_import(self.download_directory, ser['id'])
+        logger.debug('      Manual import scan of "{}" returned {} candidate(s)'.format(
+            self.download_directory, len(candidates)))
         candidate = next(
             (item for item in candidates
              if item.get('path') == downloaded_path),
             None,
         )
         if candidate is None:
-            logger.error('Sonarr did not return downloaded file for import: {}'.format(
-                downloaded_path))
+            if not candidates:
+                # Sonarr's scan of download_directory came back completely
+                # empty
+                logger.error(
+                    'Sonarr did not return downloaded file for import: {}. '
+                    'Sonarr\'s manual-import scan of "{}" returned ZERO '
+                    'candidates - it cannot see anything in that folder. '
+                    'Check that Sonarr has this exact path mounted (not just '
+                    'the same host folder under a different container path), '
+                    'that the file is readable by Sonarr\'s user, and that '
+                    'Sonarr does not already have a file recorded for this '
+                    'episode.'.format(downloaded_path, self.download_directory)
+                )
+            else:
+                # Sonarr saw something in the folder, just not a path that
+                # matches downloaded_path exactly. Compare these byte-for-byte
+                # against downloaded_path above (extension, encoding of
+                # special characters, trailing slash, symlink resolution).
+                other_paths = [item.get('path') for item in candidates]
+                logger.error(
+                    'Sonarr did not return downloaded file for import: {}. '
+                    'Sonarr\'s manual-import scan of "{}" returned {} other '
+                    'path(s) instead: {}'.format(
+                        downloaded_path, self.download_directory,
+                        len(candidates), other_paths
+                    )
+                )
             return False
 
         episode_id = eps.get('id')
@@ -729,6 +756,12 @@ class StreamHarvester(object):
             logger.error('Cannot import downloaded file without a Sonarr episode id: {}'.format(
                 downloaded_path))
             return False
+
+        if candidate.get('rejections'):
+            logger.warning(
+                '      Sonarr flagged rejection(s) for this import (may still '
+                'succeed): {}'.format(candidate['rejections'])
+            )
 
         import_data = {
             'path': downloaded_path,
