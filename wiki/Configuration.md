@@ -267,13 +267,25 @@ series:
         replace: ''
 ```
 
+### Series with Dynamic URL Variables
+
+For sites that require a hardcoded value (usually a year) in the URL path:
+
+```yaml
+series:
+  - title: Have You Been Paying Attention?
+    url: https://10.com.au/have-you-been-paying-attention/episodes/{release-year}/
+```
+
+See [Dynamic URL Variables](Advanced-Features#dynamic-url-variables) for the full list of supported variables.
+
 ### Complete Series Options
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | `title` | string | Required unless `sonarr_id` is set | Series name or label for logs and downloaded paths; must match Sonarr when no ID is configured |
 | `sonarr_id` | integer | Optional | Sonarr series ID. When set, the series is fetched directly and title matching is skipped |
-| `url` | string | Required | Channel, playlist URL, or path relative to service URL |
+| `url` | string | Required | Channel, playlist URL, or path relative to service URL. May contain `{variable}` placeholders (e.g. `{release-year}`) substituted per-episode — see [Dynamic URL Variables](Advanced-Features#dynamic-url-variables) |
 | `service` | string | Optional | Service name to inherit shared configuration from |
 | `format` | string | Optional | Override default format for this series |
 | `cookies_file` | string | Optional | Cookie file for authentication (relative to config dir) |

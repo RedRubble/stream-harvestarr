@@ -105,3 +105,11 @@ series:
   - title: Veritasium
     service: YouTube Members
     url: channel/UCHnyfMqiRRG1u-2MsSQLbXA
+  # Example using dynamic URL variables. Some sites organise episodes under a
+  # hardcoded year in the URL, so a single fixed url only ever resolves that
+  # one year. {release-year} is replaced per-episode with the air date year
+  # Sonarr has for the episode currently being searched for.
+  # For all supported variables see the wiki: Advanced-Features#dynamic-url-variables
+  - title: Have You Been Paying Attention?
+    url: https://10.com.au/have-you-been-paying-attention/episodes/{release-year}/
+

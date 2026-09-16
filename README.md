@@ -20,6 +20,7 @@ Please update your image and update your config.yml. :warning:
 * Imports directly to Sonarr and it can then update your plex as and example
 * Allows setting time offsets to handle prerelease series
 * Can pass cookies.txt to handle site logins
+* Dynamic URL variables (release year, season, episode, and more) for sites that require per-episode URLs
 * Smart rate limiting with exponential backoff to prevent YouTube throttling
 * Comprehensive configuration options for bulk downloads
 

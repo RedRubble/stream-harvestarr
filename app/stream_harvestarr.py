@@ -6,6 +6,7 @@ import collections
 import os
 import sys
 import re
+import string
 from utils import upperescape, normalize_title, checkconfig, offsethandler, YoutubeDLLogger, ytdl_hooks, ytdl_hooks_debug, setup_logging  # NOQA
 from pathutils import normalize_root_folder, DEFAULT_ROOT_FOLDER
 from datetime import datetime
@@ -296,6 +297,124 @@ def warn_unknown_keys(entries, known, kind):
                     '{} "{}" has unrecognised regex key(s): {} - these are ignored. '
                     'Valid keys: sonarr, site'.format(kind, name, ', '.join(unknown_regex))
                 )
+
+
+# Variables a series' `url` may reference as {name} placeholders, resolved
+# per-episode just before the search url is handed to yt-dlp. Kept as an
+# explicit whitelist (rather than "whatever build_url_variables() happens to
+# produce") so a typo'd or invented variable is reported as an error instead
+# of silently reaching yt-dlp as a literal, un-substituted "{...}".
+SUPPORTED_URL_VARIABLES = frozenset((
+    'release-year', 'release-month', 'release-day', 'release-date',
+    'season', 'episode', 'absolute-episode',
+    'series-title', 'episode-title', 'series-year',
+))
+
+
+def _episode_air_date(eps):
+    """Parse an episode's Sonarr airDateUtc, or None if absent/unparsable."""
+    raw = eps.get('airDateUtc')
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(raw, date_format)
+    except ValueError:
+        return None
+
+
+def _url_field_root(field_name):
+    """The bare variable name from a str.format field, e.g. 'season' from
+    'season.foo' or 'season[0]'. Anything past '.'/'[' is attribute/index
+    access str.format itself would try to resolve; we only ever hand out
+    flat values, so treating the root as the variable name is enough to
+    validate against SUPPORTED_URL_VARIABLES and to report clearly."""
+    return re.match(r'^[^.\[]*', field_name).group()
+
+
+def build_url_variables(ser, eps):
+    """Values for every URL template variable resolvable for this episode.
+
+    A name in SUPPORTED_URL_VARIABLES simply doesn't appear in the result
+    when the underlying data isn't available for this particular episode
+    (e.g. no air date yet) - it's up to render_url_template() to decide
+    that's fatal for *this* url, since a url that doesn't reference the
+    missing field doesn't care.
+    """
+    values = {}
+    air_date = _episode_air_date(eps)
+    if air_date is not None:
+        values['release-year'] = air_date.year
+        values['release-month'] = air_date.month
+        values['release-day'] = air_date.day
+        values['release-date'] = air_date.strftime('%Y-%m-%d')
+    if eps.get('seasonNumber') is not None:
+        values['season'] = eps['seasonNumber']
+    if eps.get('episodeNumber') is not None:
+        values['episode'] = eps['episodeNumber']
+    if eps.get('absoluteEpisodeNumber'):
+        values['absolute-episode'] = eps['absoluteEpisodeNumber']
+    if ser.get('title'):
+        values['series-title'] = urllib.parse.quote(ser['title'])
+    if eps.get('title'):
+        values['episode-title'] = urllib.parse.quote(eps['title'])
+    if ser.get('year'):
+        values['series-year'] = ser['year']
+    return values
+
+
+def render_url_template(url, ser, eps):
+    """Substitute {variable} placeholders in a series' url for one episode.
+
+    Uses Python's own str.format mini-language, so padding works for free -
+    e.g. {season:02} and {episode:02} zero-pad to two digits (Python's
+    width syntax, not Sonarr's own "{season:00}" naming-token syntax) - and
+    {release-year} etc. need no padding at all. A url with no placeholders
+    is returned unchanged - existing configs are unaffected.
+
+    Returns None (having logged why) when a placeholder can't be honoured,
+    so the caller skips this episode this pass rather than handing yt-dlp a
+    url with a literal, un-substituted "{...}" still in it - that would
+    either 404 or, worse, resolve to whatever the site does with a
+    malformed path.
+    """
+    try:
+        fields = [name for _, name, _, _ in string.Formatter().parse(url) if name is not None]
+    except ValueError as e:
+        logger.error('Series "{}" has a malformed url template ({}) - skipping'.format(
+            ser.get('title', '?'), e))
+        return None
+    if not fields:
+        return url
+
+    roots = {name: _url_field_root(name) for name in fields}
+    unsupported = sorted({name for name, root in roots.items() if root not in SUPPORTED_URL_VARIABLES})
+    if unsupported:
+        logger.error(
+            'Series "{}" url uses unsupported variable(s): {} - skipping. '
+            'Supported variables: {}'.format(
+                ser.get('title', '?'), ', '.join(unsupported),
+                ', '.join(sorted(SUPPORTED_URL_VARIABLES))
+            )
+        )
+        return None
+
+    values = build_url_variables(ser, eps)
+    missing = sorted({name for name, root in roots.items() if root not in values})
+    if missing:
+        logger.warning(
+            'Series "{}" episode "{}" - url needs {} but this episode has no '
+            'data for it yet - skipping this pass'.format(
+                ser.get('title', '?'), eps.get('title', '?'), ', '.join(missing)
+            )
+        )
+        return None
+
+    try:
+        return url.format(**values)
+    except (KeyError, ValueError, IndexError, AttributeError) as e:
+        logger.error('Series "{}" has an invalid url template ({}) - skipping'.format(
+            ser.get('title', '?'), e))
+        return None
 
 
 def compile_site_regex(match, replace, series_title):
@@ -1079,7 +1198,10 @@ class StreamHarvester(object):
                         cookies = None
                         username = None
                         password = None
-                        url = ser['url']
+                        url = render_url_template(ser['url'], ser, eps)
+                        if url is None:
+                            logger.info("    {}: Missing - {}:".format(e + 1, eps['title']))
+                            continue
                         if 'cookies_file' in ser:
                             cookies = ser['cookies_file']
                         if 'username' in ser:

@@ -153,6 +153,26 @@ series:
         replace: 'Ep\\1'
 ```
 
+### "url uses unsupported variable(s)" / "cannot resolve URL variable(s)"
+
+The series' `url` contains a `{variable}` placeholder — see
+[Dynamic URL Variables](Advanced-Features#dynamic-url-variables). Two
+distinct causes, both logged clearly:
+
+**"unsupported variable(s)"** — the name inside `{...}` is misspelled or
+isn't one Stream Harvestarr knows (e.g. `{relase-year}` instead of
+`{release-year}`). The log line lists the exact variable it didn't
+recognise and the full supported list. Fix the spelling in `config.yml`;
+every episode for that series is skipped until you do.
+
+**"cannot resolve URL variable(s) ... no data for this episode"** — the
+variable is valid, but this particular episode is missing the data it
+needs. Most often `{release-year}` (and the other `release-*` variables)
+on an episode with no air date yet, or `{absolute-episode}` on a series
+Sonarr doesn't track absolute numbering for. This episode is skipped for
+this scan only and retried automatically once the data is available — no
+config change needed.
+
 ### "No video_url"
 
 The matcher couldn't return a usable URL for the episode. Two distinct

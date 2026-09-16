@@ -74,6 +74,7 @@ Advanced configuration options:
 - Subtitle handling
 - Time offsets for early releases
 - Regex title matching
+- Dynamic URL variables for per-episode URLs
 - Cookie-based authentication
 
 ## Getting Help

@@ -10,6 +10,7 @@ This guide covers advanced configuration options and use cases for Stream Harves
 - [Time Offsets](#time-offsets)
 - [Specifying Root Folder](#specifying-root-folder)
 - [Regex Title Matching](#regex-title-matching)
+- [Dynamic URL Variables](#dynamic-url-variables)
 - [Playlist Handling](#playlist-handling)
 - [Services](#services)
 - [Multiple Series Management](#multiple-series-management)
@@ -537,6 +538,66 @@ series:
       site:
         match: '^\\[[A-Z]+\\]\\s*'
         replace: ''
+```
+
+## Dynamic URL Variables
+
+Some sites include a value (e.g a year) into the URL path itself, and
+that value has to match the episode you're actually after.
+
+`{variable}` placeholders in a series' `url` are substituted per-episode,
+before that episode is searched for, using data from Sonarr.
+
+### Basic Example
+
+`10play`'s episode listings are grouped by the year they aired and yt-dlp
+is unable to search for episodes at a series level.
+
+```yaml
+series:
+  - title: Have You Been Paying Attention?
+    url:  https://10.com.au/taskmaster/episodes/season-{season}/
+```
+
+Season 5 aired in 2026, so Stream Harvestarr searches
+`.../episodes/2026/` for it. Season 4's episodes aired in 2025, so the same
+config searches `.../episodes/2025/` for those instead.
+
+### Supported Variables
+
+| Variable             | Value                                                        |
+| --------------------- | ------------------------------------------------------------ |
+| `{release-year}`      | Year of the episode's air date, e.g. `2026`                  |
+| `{release-month}`     | Month of the episode's air date, e.g. `3`                    |
+| `{release-day}`       | Day of the episode's air date, e.g. `7`                      |
+| `{release-date}`      | ISO air date, e.g. `2026-03-07`                              |
+| `{season}`            | Season number, e.g. `5`                                      |
+| `{episode}`           | Episode number, e.g. `10`                                    |
+| `{absolute-episode}`  | Absolute episode number, when Sonarr tracks one for the series (mainly anime) |
+| `{series-title}`      | The series' title, URL-encoded                               |
+| `{episode-title}`     | The episode's title, URL-encoded                              |
+| `{series-year}`       | Year the series first aired, from Sonarr                      |
+
+### Zero-Padding
+
+Variables are substituted using Python's standard string formatting, so any
+of the numeric ones can be zero-padded with a format spec:
+
+```yaml
+url: https://example.com/s{season:02}e{episode:02}/
+```
+
+`{season:02}` renders season 5 as `05`; `{release-month:02}` renders March
+as `03`. Without a format spec, numbers render unpadded (`5`, `3`).
+
+### Combining Variables
+
+Any number of variables can appear in one `url`:
+
+```yaml
+series:
+  - title: Some Anthology Show
+    url: https://example.com/{series-title}/{release-year}/s{season:02}e{episode:02}
 ```
 
 ## Playlist Handling
